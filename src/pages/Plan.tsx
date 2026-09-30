@@ -12,7 +12,7 @@ import { Slider } from "@/components/ui/slider";
 import { PageHeader } from "@/components/Layout";
 import { api } from "@/lib/api";
 import { useStore } from "@/store/useStore";
-import { useT } from "@/lib/i18n";
+import { useT, type TKey } from "@/lib/i18n";
 import { cn, fmtINR } from "@/lib/utils";
 
 const REGIONS = [
@@ -21,7 +21,7 @@ const REGIONS = [
   { value: "Spiti Valley, Himachal Pradesh", label: "Spiti Valley, Himachal (coming soon)", enabled: false },
 ];
 
-const LOADING_STEPS = ["Analyzing destinations...", "Checking crowd conditions...", "Evaluating alternatives...", "Optimizing route...", "Calculating environmental impact..."];
+const LOADING_STEPS = ["load1", "load2", "load3", "load4", "load5"] as const;
 
 function Step({ n, title, children, hint }: { n: number; title: string; children: React.ReactNode; hint?: string }) {
   return (
@@ -68,7 +68,7 @@ export default function Plan() {
 
   async function generate(e: React.FormEvent) {
     e.preventDefault();
-    if (!prefs.interests.length) return toast.error("Pick at least one interest");
+    if (!prefs.interests.length) return toast.error(t("pickInterest"));
     setLoading(true);
     try {
       const [r] = await Promise.all([api.generate(prefs), new Promise((res) => setTimeout(res, 2700))]);
@@ -86,13 +86,13 @@ export default function Plan() {
 
   return (
     <div className="container max-w-4xl">
-      <PageHeader eyebrow="Smart trip planner" title="Plan a crowd-aware trip" subtitle="Tell us how you like to travel. RouteSetu builds an itinerary that avoids overloaded sites and supports local communities." />
+      <PageHeader eyebrow={t("planEyebrow")} title={t("planTitle")} subtitle={t("planSub")} />
       <form onSubmit={generate} className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
-          <Step n={1} title="Destination / region" hint="Starting point and where you want to explore">
+          <Step n={1} title={t("stepRegion")} hint={t("stepRegionHint")}>
             <div className="space-y-3">
               <div className="relative">
-                <Label htmlFor="origin">Starting location</Label>
+                <Label htmlFor="origin">{t("origin")}</Label>
                 <div className="relative mt-1.5">
                   <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input id="origin" className="pl-9" value={prefs.origin} onChange={(e) => onOrigin(e.target.value)} onBlur={() => setTimeout(() => setSuggestions([]), 200)} autoComplete="off" />
@@ -117,7 +117,7 @@ export default function Plan() {
                 )}
               </div>
               <div>
-                <Label htmlFor="region">Region</Label>
+                <Label htmlFor="region">{t("region")}</Label>
                 <select
                   id="region"
                   value={prefs.destinationRegion}
@@ -133,17 +133,17 @@ export default function Plan() {
               </div>
             </div>
           </Step>
-          <Step n={2} title="Dates" hint="When does your trip start?">
-            <Label htmlFor="start">Start date</Label>
+          <Step n={2} title={t("stepDates")} hint={t("stepDatesHint")}>
+            <Label htmlFor="start">{t("startDate")}</Label>
             <Input id="start" type="date" className="mt-1.5" value={prefs.startDate} onChange={(e) => setPrefs({ startDate: e.target.value })} required />
-            <Label htmlFor="tname" className="mt-3 block">Trip name <span className="font-normal text-muted-foreground">(optional)</span></Label>
+            <Label htmlFor="tname" className="mt-3 block">{t("tripName")} <span className="font-normal text-muted-foreground">{t("optional")}</span></Label>
             <Input id="tname" className="mt-1.5" placeholder="Monsoon waterfalls weekend" value={prefs.name ?? ""} onChange={(e) => setPrefs({ name: e.target.value })} maxLength={80} />
           </Step>
-          <Step n={3} title="Duration & pace">
+          <Step n={3} title={t("stepDuration")}>
             <div className="flex flex-wrap gap-2">
               {[1, 2, 3, 4, 5].map((d) => (
                 <Button type="button" key={d} size="sm" variant={prefs.days === d ? "default" : "outline"} onClick={() => setPrefs({ days: d })}>
-                  {d} day{d > 1 ? "s" : ""}
+                  {d} {d > 1 ? t("days") : t("day")}
                 </Button>
               ))}
             </div>
@@ -155,19 +155,19 @@ export default function Plan() {
                   onClick={() => setPrefs({ pace: p })}
                   className={cn("rounded-full py-2 text-sm font-semibold capitalize transition-all", prefs.pace === p ? "bg-card text-forest shadow-sm dark:text-mint" : "text-muted-foreground")}
                 >
-                  {p}
+                  {t(p)}
                 </button>
               ))}
             </div>
           </Step>
-          <Step n={4} title="Travelers">
+          <Step n={4} title={t("stepTravelers")}>
             <div className="flex items-center gap-4">
               <Button type="button" size="icon" variant="outline" onClick={() => setPrefs({ travelers: Math.max(1, prefs.travelers - 1) })} aria-label="Fewer travelers">
                 <Minus />
               </Button>
               <div className="min-w-16 text-center">
                 <div className="text-3xl font-extrabold text-forest dark:text-mint">{prefs.travelers}</div>
-                <div className="text-xs text-muted-foreground">{Math.ceil(prefs.travelers / 4)} vehicle(s)</div>
+                <div className="text-xs text-muted-foreground">{Math.ceil(prefs.travelers / 4)} {t("vehicles")}</div>
               </div>
               <Button type="button" size="icon" variant="outline" onClick={() => setPrefs({ travelers: Math.min(40, prefs.travelers + 1) })} aria-label="More travelers">
                 <Plus />
@@ -176,7 +176,7 @@ export default function Plan() {
           </Step>
         </div>
 
-        <Step n={5} title="Interests" hint="We match alternatives to the experiences you care about">
+        <Step n={5} title={t("stepInterests")} hint={t("stepInterestsHint")}>
           <div className="flex flex-wrap gap-2">
             {INTERESTS.map((i) => {
               const on = prefs.interests.includes(i.id);
@@ -191,7 +191,7 @@ export default function Plan() {
                     on ? "border-eco bg-eco text-white shadow-soft" : "bg-card hover:border-eco/50",
                   )}
                 >
-                  {on && <Check className="h-3.5 w-3.5" />} {i.label}
+                  {on && <Check className="h-3.5 w-3.5" />} {t(`int_${i.id}` as TKey)}
                 </button>
               );
             })}
@@ -199,20 +199,20 @@ export default function Plan() {
         </Step>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Step n={6} title="Budget">
+          <Step n={6} title={t("stepBudget")}>
             <div className="text-2xl font-extrabold text-forest dark:text-mint">{fmtINR(prefs.budget)}</div>
             <Slider className="mt-2" value={[prefs.budget]} min={2000} max={100000} step={1000} onValueChange={([v]) => setPrefs({ budget: v })} aria-label="Budget" />
-            <p className="text-xs text-muted-foreground">Total for the group</p>
+            <p className="text-xs text-muted-foreground">{t("budgetHint")}</p>
           </Step>
-          <Step n={7} title="Crowd tolerance">
+          <Step n={7} title={t("stepCrowdTol")}>
             <div className="text-2xl font-extrabold text-forest dark:text-mint">{prefs.crowdTolerance}</div>
             <Slider className="mt-2" value={[prefs.crowdTolerance]} min={0} max={100} step={5} onValueChange={([v]) => setPrefs({ crowdTolerance: v })} aria-label="Crowd tolerance" />
-            <p className="text-xs text-muted-foreground">Divert above {diversionThreshold(prefs.crowdTolerance)}% crowd</p>
+            <p className="text-xs text-muted-foreground">{t("divertAbove")} {diversionThreshold(prefs.crowdTolerance)}%</p>
           </Step>
-          <Step n={8} title="Eco priority">
+          <Step n={8} title={t("stepEco")}>
             <div className="text-2xl font-extrabold text-forest dark:text-mint">{prefs.ecoPriority}</div>
             <Slider className="mt-2" value={[prefs.ecoPriority]} min={0} max={100} step={5} onValueChange={([v]) => setPrefs({ ecoPriority: v })} aria-label="Eco priority" />
-            <p className="text-xs text-muted-foreground">Weight on low-impact alternatives</p>
+            <p className="text-xs text-muted-foreground">{t("ecoHint")}</p>
           </Step>
         </div>
 
@@ -229,7 +229,7 @@ export default function Plan() {
             <Card className="w-[min(92vw,420px)] p-7">
               <div className="mb-5 flex items-center gap-3">
                 <Loader2 className="h-6 w-6 animate-spin text-eco" />
-                <h3 className="text-lg font-bold">Building your smart itinerary</h3>
+                <h3 className="text-lg font-bold">{t("building")}</h3>
               </div>
               <ul className="space-y-3">
                 {LOADING_STEPS.map((s, i) => (
@@ -237,7 +237,7 @@ export default function Plan() {
                     <span className={cn("flex h-5 w-5 items-center justify-center rounded-full", i < stepIdx ? "bg-eco text-white" : i === stepIdx ? "border-2 border-eco" : "border")}>
                       {i < stepIdx && <Check className="h-3 w-3" />}
                     </span>
-                    {s}
+                    {t(s)}
                   </motion.li>
                 ))}
               </ul>

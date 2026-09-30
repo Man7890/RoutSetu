@@ -11,8 +11,10 @@ import { SimBadge } from "@/components/StatusBadge";
 import { ImpactCompareChart } from "@/components/charts/ImpactCompareChart";
 import { api } from "@/lib/api";
 import { useDestMap, useStore } from "@/store/useStore";
+import { useT } from "@/lib/i18n";
 
 export default function Impact() {
+  const t = useT();
   const trip = useStore((s) => s.trip);
   const lastSim = useStore((s) => s.lastSimulation);
   const pool = useDestMap();
@@ -40,8 +42,8 @@ export default function Impact() {
   return (
     <div className="container">
       <PageHeader
-        eyebrow="Impact report"
-        title="What load balancing achieves"
+        eyebrow={t("impEyebrow")}
+        title={t("impTitle")}
         subtitle={trip ? `Your trip “${trip.name}” plus regional simulation results.` : "Regional simulation results. Plan a trip to add your personal impact."}
         actions={<SimBadge label="Estimates · prototype simulation" />}
       />

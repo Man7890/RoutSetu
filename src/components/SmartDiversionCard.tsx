@@ -4,6 +4,7 @@ import type { Alternative, Destination } from "@shared/types";
 import { Button } from "@/components/ui/button";
 import { cn, fmtMinutes } from "@/lib/utils";
 import { StatusBadge } from "./StatusBadge";
+import { useT } from "@/lib/i18n";
 
 export function SmartDiversionCard({
   original,
@@ -25,6 +26,7 @@ export function SmartDiversionCard({
   compact?: boolean;
 }) {
   const co2 = alternative.co2ImpactPct;
+  const t = useT();
   return (
     <motion.div
       layout
@@ -36,21 +38,21 @@ export function SmartDiversionCard({
         <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1.4 }}>
           <AlertTriangle className="h-4 w-4" />
         </motion.span>
-        CROWD SURGE DETECTED
+        {t("surgeDetected")}
       </div>
       <div className="space-y-4 p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-base font-bold text-forest dark:text-mint">{original.name}</div>
             <div className="text-sm text-muted-foreground">
-              Crowd: <span className="font-bold text-status-critical">{originalCrowd}%</span>
+              {t("crowd")}: <span className="font-bold text-status-critical">{originalCrowd}%</span>
             </div>
           </div>
           <StatusBadge score={originalCrowd} pulse />
         </div>
 
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          <ArrowDown className="h-4 w-4 text-eco" /> RouteSetu recommends
+          <ArrowDown className="h-4 w-4 text-eco" /> {t("recommends")}
         </div>
 
         <div className="rounded-2xl border border-status-alt/20 bg-sky-soft/60 p-4 dark:bg-sky/10">
@@ -65,11 +67,11 @@ export function SmartDiversionCard({
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
             <div>
-              <div className="text-xs text-muted-foreground">Crowd</div>
+              <div className="text-xs text-muted-foreground">{t("crowd")}</div>
               <div className="font-bold text-status-low">{alternative.crowdScore}%</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">Experience match</div>
+              <div className="text-xs text-muted-foreground">{t("expMatch")}</div>
               <div className="font-bold text-forest dark:text-mint">{alternative.experienceMatch}%</div>
             </div>
           </div>
@@ -97,10 +99,10 @@ export function SmartDiversionCard({
           <Button className="w-full" variant={applied ? "secondary" : "eco"} size="lg" onClick={onApply} disabled={applied}>
             {applied ? (
               <>
-                <Check /> Diversion applied
+                <Check /> {t("diversionApplied")}
               </>
             ) : (
-              "Apply Diversion"
+              t("applyDiversion")
             )}
           </Button>
         )}

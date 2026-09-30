@@ -11,10 +11,12 @@ import { SimBadge, StatusBadge } from "@/components/StatusBadge";
 import { CategoryIcon } from "@/components/DestVisual";
 import { useStore } from "@/store/useStore";
 import { cn } from "@/lib/utils";
+import { useT, type TKey } from "@/lib/i18n";
 
 const FILTERS: ("ALL" | CrowdStatus)[] = ["ALL", "LOW", "MODERATE", "HIGH", "CRITICAL"];
 
 export default function MapPage() {
+  const t = useT();
   const destinations = useStore((s) => s.destinations);
   const weather = useStore((s) => s.weather);
   const tolerance = useStore((s) => s.prefs.crowdTolerance);
@@ -34,7 +36,7 @@ export default function MapPage() {
   return (
     <div className="relative h-[calc(100vh-4rem)] w-full">
       <CrowdMap
-        destinations={shown.length ? shown : destinations}
+        destinations={shown}
         weather={weather}
         selectedId={selectedId}
         onSelect={setSelectedId}
@@ -49,7 +51,7 @@ export default function MapPage() {
         <div className="glass pointer-events-auto rounded-3xl p-4 shadow-lift">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-extrabold">Live Crowd Map</h1>
+              <h1 className="text-lg font-extrabold">{t("mapTitle")}</h1>
               <SimBadge className="mt-1" />
             </div>
             <Button size="icon" variant="ghost" onClick={() => setPanelOpen((o) => !o)} aria-label="Toggle filters">
@@ -60,12 +62,12 @@ export default function MapPage() {
             {panelOpen && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                 <fieldset className="mt-3">
-                  <legend className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Crowd filter</legend>
+                  <legend className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("crowdFilter")}</legend>
                   <div className="flex flex-wrap gap-1.5">
                     {FILTERS.map((f) => (
                       <label key={f} className={cn("cursor-pointer rounded-full border px-3 py-1 text-xs font-semibold capitalize", filter === f ? "border-forest bg-forest text-white dark:border-mint dark:bg-mint dark:text-forest" : "bg-card")}>
                         <input type="radio" name="crowd-filter" className="sr-only" checked={filter === f} onChange={() => setFilter(f)} />
-                        {f.toLowerCase()} {f !== "ALL" && `(${destinations.filter((d) => crowdStatus(d.crowdScore) === f).length})`}
+                        {t(`f_${f}` as TKey)} {f !== "ALL" && `(${destinations.filter((d) => crowdStatus(d.crowdScore) === f).length})`}
                       </label>
                     ))}
                   </div>
@@ -117,7 +119,7 @@ export default function MapPage() {
             </div>
             {alts.length > 0 && (
               <div className="mt-4">
-                <div className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Alternative destinations</div>
+                <div className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("altDest")}</div>
                 <div className="space-y-2">
                   {alts.map((a) => {
                     const d = destinations.find((x) => x.id === a.destinationId)!;
@@ -138,7 +140,7 @@ export default function MapPage() {
             )}
             <Button asChild className="mt-4 w-full">
               <Link to={`/destination/${selected.id}`}>
-                Full details <ArrowRight />
+                {t("fullDetails")} <ArrowRight />
               </Link>
             </Button>
           </motion.aside>

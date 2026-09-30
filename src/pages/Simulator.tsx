@@ -17,8 +17,10 @@ import { CrowdMap } from "@/components/CrowdMap";
 import { api } from "@/lib/api";
 import { useDestMap, useStore } from "@/store/useStore";
 import { fmtMinutes } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 export default function Simulator() {
+  const t = useT();
   const destinations = useStore((s) => s.destinations);
   const weather = useStore((s) => s.weather);
   const trip = useStore((s) => s.trip);
@@ -48,9 +50,9 @@ export default function Simulator() {
   return (
     <div className="container">
       <PageHeader
-        eyebrow="Hackathon demo"
-        title="Crowd Surge Simulator"
-        subtitle="Push a destination past capacity and watch RouteSetu's load-balancing engine react."
+        eyebrow={t("simEyebrow")}
+        title={t("simTitle")}
+        subtitle={t("simSub")}
         actions={<SimBadge />}
       />
       <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
@@ -95,7 +97,7 @@ export default function Simulator() {
                         <AlertTriangle className="h-6 w-6" />
                       </motion.div>
                       <div>
-                        <div className="text-sm font-extrabold tracking-wide text-status-critical">{result.overloaded ? "CROWD SURGE DETECTED" : "CROWD INCREASE LOGGED"}</div>
+                        <div className="text-sm font-extrabold tracking-wide text-status-critical">{result.overloaded ? t("surgeDetected") : t("increaseLogged")}</div>
                         <div className="text-xl font-extrabold">{result.destination.name}</div>
                         <div className="text-2xl font-extrabold tabular-nums">
                           <span className="text-muted-foreground">{result.event.previousCrowdScore}%</span> → <span className="text-status-critical">{result.event.newCrowdScore}%</span>
@@ -105,7 +107,7 @@ export default function Simulator() {
                     <div className="text-sm sm:max-w-[240px] sm:text-right">
                       {result.overloaded ? (
                         <span className="flex items-center gap-1.5 font-semibold text-eco sm:justify-end">
-                          <CheckCircle2 className="h-4 w-4" /> RouteSetu activated dynamic load balancing.
+                          <CheckCircle2 className="h-4 w-4 shrink-0" /> {t("lbActivated")}
                         </span>
                       ) : (
                         <span className="text-muted-foreground">Below the {result.threshold}% diversion threshold — no diversion needed yet. Try a bigger surge.</span>
@@ -114,13 +116,18 @@ export default function Simulator() {
                   </CardContent>
                 </Card>
 
+                {result.overloaded && !best && (
+                  <Card className="p-6 text-sm text-muted-foreground">
+                    No comparable destination is below the diversion threshold right now — try resetting the simulation.
+                  </Card>
+                )}
                 {result.overloaded && best && bestDest && orig && (
                   <>
                     <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
                       <Card className="p-6">
                         <div className="flex flex-col items-center gap-3 text-center">
                           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="w-full rounded-2xl border-2 border-status-critical/40 bg-status-critical/5 p-4">
-                            <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Original</div>
+                            <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{t("original")}</div>
                             <div className="mt-1 text-lg font-extrabold">{orig.name}</div>
                             <div className="text-3xl font-extrabold text-status-critical">{result.destination.crowdScore}%</div>
                             <StatusBadge score={result.destination.crowdScore} pulse />
@@ -129,7 +136,7 @@ export default function Simulator() {
                             <ArrowDown className="h-8 w-8 text-eco" />
                           </motion.div>
                           <motion.div initial={{ opacity: 0, y: 20, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.7, type: "spring" }} className="w-full rounded-2xl border-2 border-status-low/40 bg-status-low/5 p-4">
-                            <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Optimized</div>
+                            <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{t("optimized")}</div>
                             <div className="mt-1 text-lg font-extrabold">{bestDest.name}</div>
                             <div className="text-3xl font-extrabold text-status-low">{best.crowdScore}%</div>
                             <div className="mt-1 flex flex-wrap justify-center gap-2 text-xs font-semibold">
@@ -145,7 +152,7 @@ export default function Simulator() {
 
                     <Card>
                       <CardHeader>
-                        <CardTitle>Tourism Load Redistribution</CardTitle>
+                        <CardTitle>{t("redistribution")}</CardTitle>
                         <p className="text-xs text-muted-foreground">
                           ~{result.visitorsRedistributed.toLocaleString("en-IN")} simulated visitors re-routed to bring {orig.name} toward 70% utilisation.
                         </p>
@@ -163,7 +170,7 @@ export default function Simulator() {
                         <LocalImpact destination={bestDest} />
                         <Card>
                           <CardHeader>
-                            <CardTitle>Other alternatives</CardTitle>
+                            <CardTitle>{t("otherAlts")}</CardTitle>
                           </CardHeader>
                           <CardContent className="space-y-2">
                             {result.alternatives.slice(1).map((a) => {
@@ -192,7 +199,7 @@ export default function Simulator() {
                         </div>
                         <Button asChild>
                           <Link to="/itinerary">
-                            See updated itinerary <ArrowRight />
+                            {t("seeUpdated")} <ArrowRight />
                           </Link>
                         </Button>
                       </Card>

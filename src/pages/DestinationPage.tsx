@@ -15,6 +15,7 @@ import { CrowdTrendChart } from "@/components/charts/CrowdTrendChart";
 import { DestVisual } from "@/components/DestVisual";
 import { api, type DestinationDetail } from "@/lib/api";
 import { useDestMap, useStore } from "@/store/useStore";
+import { useT, type TKey } from "@/lib/i18n";
 
 export default function DestinationPage() {
   const { id = "" } = useParams();
@@ -22,6 +23,7 @@ export default function DestinationPage() {
   const pool = useDestMap();
   const live = pool.get(id);
   const { trip, setTrip, prefs, upsertDestination } = useStore();
+  const t = useT();
   const [detail, setDetail] = useState<DestinationDetail | null>(null);
   const [osm, setOsm] = useState<{ name: string; kind: string }[] | null>(null);
   const [adding, setAdding] = useState(false);
@@ -31,7 +33,18 @@ export default function DestinationPage() {
   useEffect(() => {
     setDetail(null);
     setOsm(null);
-    api.destination(id, tolerance).then(setDetail).catch(() => setDetail(null));
+    setOpenAlt(null);
+  }, [id]);
+
+  useEffect(() => {
+    let alive = true;
+    api
+      .destination(id, tolerance)
+      .then((r) => alive && setDetail(r))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
   }, [id, tolerance, live?.crowdScore]);
 
   const d = live ?? detail?.destination;
@@ -94,7 +107,7 @@ export default function DestinationPage() {
       <DestVisual d={d} className="h-56 md:h-72">
         <div className="container relative flex h-full flex-col justify-between py-5">
           <Link to="/map" className="flex w-fit items-center gap-1 rounded-full bg-black/25 px-3 py-1 text-sm font-semibold text-white backdrop-blur hover:bg-black/40">
-            <ArrowLeft className="h-4 w-4" /> Live map
+            <ArrowLeft className="h-4 w-4" /> {t("map")}
           </Link>
           <div>
             <div className="flex flex-wrap gap-2">
@@ -128,7 +141,7 @@ export default function DestinationPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between gap-2">
-                <CardTitle>Crowd today</CardTitle>
+                <CardTitle>{t("crowdToday")}</CardTitle>
                 <SimBadge />
               </div>
             </CardHeader>
@@ -139,10 +152,10 @@ export default function DestinationPage() {
               </div>
               {detail?.trend && <CrowdTrendChart data={detail.trend} threshold={diversionThreshold(tolerance)} height={220} />}
               <div className="flex flex-wrap items-center gap-2 border-t pt-4 text-sm">
-                <span className="font-semibold">Here now? Report the crowd:</span>
+                <span className="font-semibold">{t("reportCrowd")}</span>
                 {(["LOW", "MODERATE", "HIGH", "CRITICAL"] as CrowdStatus[]).map((s) => (
                   <button key={s} onClick={() => report(s)} className="rounded-full border px-3 py-1 text-xs font-bold hover:bg-muted" style={{ color: STATUS_COLORS[s] }}>
-                    {s.toLowerCase()}
+                    {t(`f_${s}` as TKey)}
                   </button>
                 ))}
               </div>
@@ -151,7 +164,7 @@ export default function DestinationPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Nearby alternatives</CardTitle>
+              <CardTitle>{t("nearbyAlts")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {!detail && <Loader2 className="h-5 w-5 animate-spin text-eco" />}
@@ -192,7 +205,7 @@ export default function DestinationPage() {
         <aside className="space-y-6">
           <Card className="p-6">
             <Button size="lg" className="w-full" onClick={addToTrip} disabled={adding || inTrip}>
-              {adding ? <Loader2 className="animate-spin" /> : <Plus />} {inTrip ? "Already in your trip" : "Add to Trip"}
+              {adding ? <Loader2 className="animate-spin" /> : <Plus />} {inTrip ? t("alreadyInTrip") : t("addToTrip")}
             </Button>
             <p className="mt-2 text-center text-xs text-muted-foreground">{trip ? `Adds to “${trip.name}” and re-optimizes the route` : "You'll be asked to plan a trip first"}</p>
           </Card>
@@ -200,7 +213,7 @@ export default function DestinationPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Weather</CardTitle>
+                <CardTitle>{t("weather")}</CardTitle>
                 <span className="text-[10px] font-semibold uppercase text-muted-foreground">{w?.source === "OPEN_METEO" ? "Open-Meteo" : "Fallback estimate"}</span>
               </div>
             </CardHeader>

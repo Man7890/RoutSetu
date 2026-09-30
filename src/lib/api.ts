@@ -70,9 +70,7 @@ export const api = {
     ),
   reset: () => request<{ ok: boolean; destinations: Destination[] }>("/simulation/reset", post({}), () => offline.reset()),
   report: (destinationId: string, crowdScore: number) =>
-    request<{ destination: Destination }>("/crowd/report", post({ destinationId, crowdScore }), () => ({
-      destination: offline.destinations().destinations.find((d) => d.id === destinationId)!,
-    })),
+    request<{ destination: Destination }>("/crowd/report", post({ destinationId, crowdScore }), () => offline.report(destinationId, crowdScore)),
   stats: () => request<CommandStats>("/stats", undefined, () => offline.stats()),
   trip: (id: string) =>
     request<{ trip: Trip }>(`/trips/${id}`, undefined, () => {

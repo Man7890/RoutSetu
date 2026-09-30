@@ -8,7 +8,7 @@ import { SimBadge } from "@/components/StatusBadge";
 import { DestVisual } from "@/components/DestVisual";
 import { CountUp } from "@/components/CountUp";
 import { useStore } from "@/store/useStore";
-import { useT } from "@/lib/i18n";
+import { useT, type TKey } from "@/lib/i18n";
 import { crowdStatus } from "@shared/engine";
 
 const BENEFITS = [
@@ -41,7 +41,7 @@ export default function Landing() {
         </div>
         <div className="container grid items-center gap-12 py-14 md:py-20 lg:grid-cols-[1.1fr_1fr]">
           <div className="space-y-7">
-            <SimBadge label={`${dests.length || 16} destinations monitored · ${t("simulated")}`} />
+            <SimBadge label={`${dests.length || 16} ${t("monitored")} · ${t("simulated")}`} />
             <h1 className="text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-6xl">
               {t("heroA")}
               <br />
@@ -68,15 +68,15 @@ export default function Landing() {
             <div className="flex flex-wrap gap-8 pt-2">
               <div>
                 <div className="metric"><CountUp value={critical} /></div>
-                <div className="text-xs text-muted-foreground">high-pressure sites right now</div>
+                <div className="text-xs text-muted-foreground">{t("statHigh")}</div>
               </div>
               <div>
                 <div className="metric"><CountUp value={calm} /></div>
-                <div className="text-xs text-muted-foreground">calm eco-alternatives</div>
+                <div className="text-xs text-muted-foreground">{t("statCalm")}</div>
               </div>
               <div>
                 <div className="metric">&lt;2<span className="text-lg"> min</span></div>
-                <div className="text-xs text-muted-foreground">to see load balancing live</div>
+                <div className="text-xs text-muted-foreground">{t("statDemo")}</div>
               </div>
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function Landing() {
                 transition={{ delay: 0.8 }}
                 className="glass absolute -bottom-6 right-0 z-10 flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lift"
               >
-                <Sparkles className="h-4 w-4 text-eco" /> Chitrakote at capacity? RouteSetu finds a calmer falls nearby
+                <Sparkles className="h-4 w-4 text-eco" /> {t("heroChip")}
               </motion.div>
             )}
           </div>
@@ -125,8 +125,8 @@ export default function Landing() {
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-mint-soft text-eco dark:bg-white/10 dark:text-mint">
                   <b.icon className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-bold">{b.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{b.text}</p>
+                <h3 className="text-lg font-bold">{t(`ben${i + 1}` as TKey)}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{t(`ben${i + 1}t` as TKey)}</p>
               </Card>
             </motion.div>
           ))}
@@ -137,17 +137,17 @@ export default function Landing() {
         <Card className="overflow-hidden bg-forest p-8 text-white md:p-12 dark:bg-forest-900">
           <div className="grid gap-8 md:grid-cols-[1fr_1.4fr] md:items-center">
             <div className="space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-mint">The 2-minute demo</div>
-              <h2 className="text-3xl font-extrabold text-white">Instead of sending everyone to the same falls…</h2>
-              <p className="text-white/75">RouteSetu intelligently distributes visitors across suitable alternatives while preserving your travel experience.</p>
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-mint">{t("demoEyebrow")}</div>
+              <h2 className="text-3xl font-extrabold text-white">{t("demoTitle")}</h2>
+              <p className="text-white/75">{t("demoSub")}</p>
               <div className="flex flex-wrap gap-2 pt-2">
                 <Button asChild variant="secondary">
                   <Link to="/simulator">
-                    <Zap /> Open simulator
+                    <Zap /> {t("openSimulator")}
                   </Link>
                 </Button>
                 <Button asChild variant="ghost" className="text-white hover:bg-white/10">
-                  <Link to="/dashboard">Command Center →</Link>
+                  <Link to="/dashboard">{t("dashboard")} →</Link>
                 </Button>
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function Landing() {
                   className="rounded-2xl bg-white/10 p-4"
                 >
                   <div className="text-2xl font-extrabold text-mint">{i + 1}</div>
-                  <div className="mt-1 text-sm font-medium">{s}</div>
+                  <div className="mt-1 text-sm font-medium">{t(`demo${i + 1}` as TKey)}</div>
                 </motion.li>
               ))}
             </ol>

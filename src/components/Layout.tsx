@@ -67,8 +67,8 @@ function Navbar() {
               <Bookmark className="h-4 w-4" /> {t("saved")}
             </span>
           </NavLink>
-          <Button variant="ghost" size="icon" onClick={toggleLang} aria-label="Toggle language" title={lang === "en" ? "हिन्दी" : "English"}>
-            <Languages />
+          <Button variant="ghost" size="sm" onClick={toggleLang} aria-label="Toggle language" title={lang === "en" ? "हिन्दी" : "English"}>
+            <Languages /> {lang === "en" ? "हिं" : "EN"}
           </Button>
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle dark mode">
             {theme === "dark" ? <Sun /> : <Moon />}

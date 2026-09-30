@@ -22,6 +22,7 @@ const dests: Destination[] = SEED_DESTINATIONS.map((d) => ({ ...d }));
 const events: SimulationResult["event"][] = [];
 let redistributed = 438;
 let co2 = 86;
+const diversionLog: CommandStats["activeDiversions"] = [];
 
 const list = () => dests.map((d) => ({ ...d }));
 
@@ -102,12 +103,13 @@ export const offline = {
     const tolerance = body.trip?.preferences.crowdTolerance ?? body.crowdTolerance ?? 60;
     const threshold = diversionThreshold(tolerance);
     const overloaded = d.crowdScore >= threshold;
-    const alternatives = scoreAlternatives(d, pool, {
+    const altCtx = {
       interests: body.trip?.preferences.interests ?? d.tags,
       ecoPriority: body.trip?.preferences.ecoPriority ?? 60,
       threshold,
-      excludeIds: body.trip?.items.map((i) => i.destinationId),
-    }).slice(0, 4);
+    };
+    let alternatives = scoreAlternatives(d, pool, { ...altCtx, excludeIds: body.trip?.items.map((i) => i.destinationId) }).slice(0, 4);
+    if (!alternatives.length) alternatives = scoreAlternatives(d, pool, altCtx).slice(0, 4);
     const { bars, visitorsRedistributed } = overloaded ? redistribute(d, alternatives, pool) : { bars: [], visitorsRedistributed: 0 };
     redistributed += visitorsRedistributed;
     co2 += Math.round(visitorsRedistributed * 0.25);
@@ -120,6 +122,18 @@ export const offline = {
       createdAt: new Date().toISOString(),
     };
     events.unshift(event);
+    const bestAlt = overloaded ? alternatives[0] : undefined;
+    if (bestAlt) {
+      diversionLog.unshift({
+        id: event.id,
+        from: d.name,
+        to: dests.find((x) => x.id === bestAlt.destinationId)?.name ?? bestAlt.destinationId,
+        fromCrowd: d.crowdScore,
+        toCrowd: bestAlt.crowdScore,
+        visitors: visitorsRedistributed,
+        createdAt: event.createdAt,
+      });
+    }
     const result: SimulationResult = {
       event,
       destination: { ...d },
@@ -136,6 +150,13 @@ export const offline = {
       result.diversions = o.newDiversions;
     }
     return result;
+  },
+  report(id: string, crowdScore: number) {
+    const d = dests.find((x) => x.id === id);
+    if (!d) throw new Error("Destination not found");
+    d.currentVisitors = Math.max(0, Math.min(d.capacity, Math.round((crowdScore / 100) * d.capacity)));
+    d.crowdScore = crowdFromVisitors(d.currentVisitors, d.capacity);
+    return { destination: { ...d } };
   },
   reset() {
     dests.forEach((d) => {
@@ -154,7 +175,7 @@ export const offline = {
       co2AvoidedKg: co2,
       pressureReductionPct: 20,
       events,
-      activeDiversions: [],
+      activeDiversions: diversionLog.slice(0, 8),
     };
   },
 };

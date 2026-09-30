@@ -58,7 +58,7 @@ export function SurgeControl({
     <div className={cn("space-y-5", className)}>
       <div className="space-y-2">
         <label htmlFor="surge-dest" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Select destination
+          {t("selectDest")}
         </label>
         <select
           id="surge-dest"
@@ -74,13 +74,13 @@ export function SurgeControl({
         </select>
       </div>
 
-      <CrowdMeter value={dest.crowdScore} size={compact ? "md" : "lg"} label="Current crowd" threshold={threshold} />
+      <CrowdMeter value={dest.crowdScore} size={compact ? "md" : "lg"} label={t("currentCrowd")} threshold={threshold} />
 
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          <span>Crowd surge</span>
+          <span>{t("crowdSurge")}</span>
           <span className="text-forest dark:text-mint">
-            {critical ? "Critical surge" : `+${points}%`} → {projected}%
+            {critical ? t("criticalSurge") : `+${points}%`} → {projected}%
           </span>
         </div>
         <Slider
@@ -110,7 +110,7 @@ export function SurgeControl({
             </Button>
           ))}
           <Button size="sm" variant={critical ? "destructive" : "outline"} onClick={() => setCritical(true)}>
-            Critical Surge
+            {t("criticalSurge")}
           </Button>
         </div>
       </div>
@@ -118,7 +118,7 @@ export function SurgeControl({
       {trip && (
         <label className="flex items-center justify-between gap-3 rounded-xl bg-muted/60 px-3 py-2.5 text-sm">
           <span>
-            <span className="font-semibold">Re-plan my itinerary</span>
+            <span className="font-semibold">{t("replan")}</span>
             <span className="block text-xs text-muted-foreground">{trip.name}</span>
           </span>
           <Switch checked={applyToTrip} onCheckedChange={setApplyToTrip} />

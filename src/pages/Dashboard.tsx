@@ -15,6 +15,7 @@ import { CrowdTrendChart } from "@/components/charts/CrowdTrendChart";
 import { LoadDistribution } from "@/components/charts/LoadDistribution";
 import { api } from "@/lib/api";
 import { useStore } from "@/store/useStore";
+import { useT } from "@/lib/i18n";
 
 function timeAgo(iso: string) {
   const s = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
@@ -24,6 +25,7 @@ function timeAgo(iso: string) {
 }
 
 export default function Dashboard() {
+  const t = useT();
   const destinations = useStore((s) => s.destinations);
   const weather = useStore((s) => s.weather);
   const lastSim = useStore((s) => s.lastSimulation);
@@ -65,26 +67,26 @@ export default function Dashboard() {
   );
 
   const cards = [
-    { icon: Radar, label: "Destinations Monitored", value: stats?.monitored ?? destinations.length, color: "text-eco" },
-    { icon: AlertTriangle, label: "Critical Alerts", value: stats?.critical ?? 0, color: "text-status-critical", sub: `${stats?.high ?? 0} high-crowd` },
-    { icon: Users, label: "Visitors Redistributed", value: stats?.visitorsRedistributed ?? 0, color: "text-status-alt" },
-    { icon: Leaf, label: "Estimated CO₂ Avoided", value: stats?.co2AvoidedKg ?? 0, suffix: " kg", decimals: 0, color: "text-eco" },
-    { icon: Sprout, label: "Low-crowd Alternatives", value: stats?.lowAlternatives ?? 0, color: "text-status-low" },
-    { icon: TrendingDown, label: "Peak Pressure Reduction", value: stats?.pressureReductionPct ?? 0, suffix: "%", color: "text-sky" },
+    { icon: Radar, label: t("cMonitored"), value: stats?.monitored ?? destinations.length, color: "text-eco" },
+    { icon: AlertTriangle, label: t("cCritical"), value: stats?.critical ?? 0, color: "text-status-critical", sub: `${stats?.high ?? 0} ${t("highCrowd")}` },
+    { icon: Users, label: t("cRedistributed"), value: stats?.visitorsRedistributed ?? 0, color: "text-status-alt" },
+    { icon: Leaf, label: t("cCo2"), value: stats?.co2AvoidedKg ?? 0, suffix: " kg", decimals: 0, color: "text-eco" },
+    { icon: Sprout, label: t("cLow"), value: stats?.lowAlternatives ?? 0, color: "text-status-low" },
+    { icon: TrendingDown, label: t("cPressure"), value: stats?.pressureReductionPct ?? 0, suffix: "%", color: "text-sky" },
   ];
 
   return (
     <div className="container">
       <PageHeader
-        eyebrow="Live operations"
-        title="Tourism Load Command Center"
-        subtitle="Monitor crowd pressure across the Bastar region and watch RouteSetu rebalance visitors in real time."
+        eyebrow={t("dashEyebrow")}
+        title={t("dashTitle")}
+        subtitle={t("dashSub")}
         actions={
           <>
             <SimBadge />
             <Button asChild variant="destructive">
               <Link to="/simulator">
-                <Zap /> Simulate surge
+                <Zap /> {t("simulateSurge")}
               </Link>
             </Button>
           </>
@@ -110,7 +112,7 @@ export default function Dashboard() {
         <Card className="overflow-hidden">
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-eco" /> Live Crowd Map
+              <MapPin className="h-5 w-5 text-eco" /> {t("mapTitle")}
             </CardTitle>
             <MapLegend className="hidden sm:block" />
           </CardHeader>
@@ -124,7 +126,7 @@ export default function Dashboard() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Live destination status</CardTitle>
+            <CardTitle>{t("liveStatus")}</CardTitle>
           </CardHeader>
           <CardContent className="max-h-[400px] space-y-1 overflow-y-auto">
             {sorted.map((d) => (
@@ -145,7 +147,7 @@ export default function Dashboard() {
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
-            <CardTitle>Crowd Trends</CardTitle>
+            <CardTitle>{t("crowdTrends")}</CardTitle>
             <select
               value={trendDest?.id}
               onChange={(e) => setTrendId(e.target.value)}
@@ -167,7 +169,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shuffle className="h-5 w-5 text-status-alt" /> Tourism Load Redistribution
+              <Shuffle className="h-5 w-5 text-status-alt" /> {t("redistribution")}
             </CardTitle>
             <p className="text-xs text-muted-foreground">{distribution.label}</p>
           </CardHeader>
@@ -180,7 +182,7 @@ export default function Dashboard() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Environmental Impact — pressure by destination</CardTitle>
+            <CardTitle>{t("envImpact")}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
@@ -200,7 +202,7 @@ export default function Dashboard() {
         </Card>
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Active Diversions</CardTitle>
+            <CardTitle>{t("activeDiversions")}</CardTitle>
             <Button asChild size="sm" variant="ghost">
               <Link to="/impact">
                 Impact <ArrowRight />
@@ -208,7 +210,7 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-2">
-            {!stats?.activeDiversions.length && <p className="text-sm text-muted-foreground">No diversions yet — run the simulator.</p>}
+            {!stats?.activeDiversions.length && <p className="text-sm text-muted-foreground">{t("noDiversions")}</p>}
             {stats?.activeDiversions.map((a, i) => (
               <motion.div key={a.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="rounded-2xl border p-3">
                 <div className="flex items-center justify-between gap-2 text-sm">

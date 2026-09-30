@@ -259,13 +259,15 @@ export function apiRouter(repo: Repo, live: LiveCrowd) {
       const threshold = diversionThreshold(tolerance);
       const overloaded = after.crowdScore >= threshold;
       const excludeIds = body.trip ? body.trip.items.map((i) => i.destinationId) : [];
-      const alternatives = scoreAlternatives(after, pool, {
+      const altCtx = {
         interests: body.trip?.preferences.interests ?? after.tags,
         ecoPriority: body.trip?.preferences.ecoPriority ?? 60,
         threshold,
-        excludeIds,
         weather,
-      }).slice(0, 4);
+      };
+      // Prefer places not already on the trip, but never leave the region without a diversion target.
+      let alternatives = scoreAlternatives(after, pool, { ...altCtx, excludeIds }).slice(0, 4);
+      if (!alternatives.length) alternatives = scoreAlternatives(after, pool, altCtx).slice(0, 4);
       const { bars, visitorsRedistributed, pressureReducedPct } = overloaded
         ? redistribute(after, alternatives, pool)
         : { bars: [], visitorsRedistributed: 0, pressureReducedPct: 0 };

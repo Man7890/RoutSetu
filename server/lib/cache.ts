@@ -28,4 +28,5 @@ export async function fetchJson<T>(url: string, init: RequestInit & { timeoutMs?
   }
 }
 
-export const USER_AGENT = "RouteSetu-Prototype/1.0 (eco-tourism hackathon demo; contact: routesetu-demo@example.com)";
+// OSM services reject placeholder contacts (e.g. example.com) with HTTP 403, so identify via the project URL.
+export const USER_AGENT = "RouteSetu/1.0 (+https://github.com/Man7890/RoutSetu)";

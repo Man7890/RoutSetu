@@ -24,6 +24,7 @@ import { CountUp } from "@/components/CountUp";
 import { api } from "@/lib/api";
 import { useDestMap, useStore } from "@/store/useStore";
 import { cn, fmtDate, fmtINR, fmtMinutes } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 function StopCard({ item, d, original }: { item: ItineraryItem; d: Destination; original?: Destination }) {
   const weather = useStore((s) => s.weather[d.id]);
@@ -129,6 +130,7 @@ function Badges({ trip }: { trip: Trip }) {
 
 export default function Itinerary() {
   const { trip, setTrip, saveTrip, savedTrips, prefs } = useStore();
+  const t = useT();
   const pool = useDestMap();
   const destinations = useStore((s) => s.destinations);
   const [params] = useSearchParams();
@@ -155,7 +157,7 @@ export default function Itinerary() {
     return (
       <div className="container flex min-h-[60vh] flex-col items-center justify-center gap-5 text-center">
         <CalendarDays className="h-12 w-12 text-eco" />
-        <h1 className="text-3xl font-extrabold">No itinerary yet</h1>
+        <h1 className="text-3xl font-extrabold">{t("noItinerary")}</h1>
         <p className="max-w-md text-muted-foreground">Plan a trip and RouteSetu will build a crowd-aware, eco-balanced itinerary.</p>
         <div className="flex gap-2">
           <Button asChild>
@@ -200,7 +202,7 @@ export default function Itinerary() {
       const r = await api.optimize(trip);
       setTrip(r.trip);
       toast[r.newDiversions.length ? "success" : "info"](
-        r.newDiversions.length ? "RouteSetu detected a crowd surge and optimized your itinerary." : "All stops are below your diversion threshold — no changes needed.",
+        r.newDiversions.length ? t("surgeBanner") : t("noChanges"),
       );
     } finally {
       setBusy(false);
@@ -216,16 +218,16 @@ export default function Itinerary() {
         actions={
           <>
             <Button variant="outline" onClick={reoptimize} disabled={busy}>
-              {busy ? <Loader2 className="animate-spin" /> : <RefreshCw />} Re-check crowds
+              {busy ? <Loader2 className="animate-spin" /> : <RefreshCw />} {t("recheck")}
             </Button>
             <Button
               variant={isSaved ? "secondary" : "outline"}
               onClick={() => {
                 saveTrip(trip);
-                toast.success("Trip saved to this browser");
+                toast.success(t("tripSaved"));
               }}
             >
-              <Bookmark /> {isSaved ? "Saved" : "Save"}
+              <Bookmark /> {isSaved ? t("savedLbl") : t("save")}
             </Button>
             <ShareTripDialog trip={trip} />
             <Button variant="outline" onClick={() => window.print()} className="no-print">
@@ -245,7 +247,7 @@ export default function Itinerary() {
                     <Zap className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="font-bold text-forest dark:text-mint">RouteSetu detected a crowd surge and optimized your itinerary.</div>
+                    <div className="font-bold text-forest dark:text-mint">{t("surgeBanner")}</div>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
                       <span className="font-semibold text-status-critical line-through decoration-2">{pool.get(lastDiv.originalDestinationId)!.name}</span>
                       <ArrowRight className="h-4 w-4" />
@@ -281,11 +283,11 @@ export default function Itinerary() {
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">
         {[
-          { icon: Route, label: "Distance", value: imp.optimized.distanceKm, suffix: " km", sub: `${imp.distanceDeltaKm >= 0 ? "−" : "+"}${Math.abs(imp.distanceDeltaKm)} km vs traditional` },
-          { icon: Leaf, label: "Est. CO₂", value: imp.optimized.estimatedCO2Kg, suffix: " kg", decimals: 1, sub: `${imp.co2SavedKg >= 0 ? "−" : "+"}${Math.abs(imp.co2SavedKg)} kg vs traditional` },
-          { icon: MapPinned, label: "Crowd exposure", value: imp.optimized.crowdExposure, suffix: "%", sub: imp.optimized.crowdExposureLabel },
-          { icon: Clock, label: "Time saved", value: Math.max(0, imp.timeSavedMinutes), suffix: " min", sub: "incl. congestion delays" },
-          { icon: Wallet, label: "Est. cost", value: imp.optimized.estimatedCost, prefix: "₹", sub: overBudget ? `Over budget (${fmtINR(trip.preferences.budget)})` : `Within ${fmtINR(trip.preferences.budget)}` },
+          { icon: Route, label: t("distance"), value: imp.optimized.distanceKm, suffix: " km", sub: `${imp.distanceDeltaKm >= 0 ? "−" : "+"}${Math.abs(imp.distanceDeltaKm)} km vs traditional` },
+          { icon: Leaf, label: t("estCo2"), value: imp.optimized.estimatedCO2Kg, suffix: " kg", decimals: 1, sub: `${imp.co2SavedKg >= 0 ? "−" : "+"}${Math.abs(imp.co2SavedKg)} kg vs traditional` },
+          { icon: MapPinned, label: t("crowdExposure"), value: imp.optimized.crowdExposure, suffix: "%", sub: imp.optimized.crowdExposureLabel },
+          { icon: Clock, label: t("timeSaved"), value: Math.max(0, imp.timeSavedMinutes), suffix: " min", sub: "incl. congestion delays" },
+          { icon: Wallet, label: t("estCost"), value: imp.optimized.estimatedCost, prefix: "₹", sub: overBudget ? `Over budget (${fmtINR(trip.preferences.budget)})` : `Within ${fmtINR(trip.preferences.budget)}` },
         ].map((m) => (
           <Card key={m.label} className="p-4">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
@@ -294,7 +296,7 @@ export default function Itinerary() {
             <div className="mt-1 text-2xl font-extrabold text-forest dark:text-mint">
               <CountUp value={m.value} decimals={m.decimals} suffix={m.suffix} prefix={m.prefix} />
             </div>
-            <div className={cn("text-xs", m.label === "Est. cost" && overBudget ? "text-status-high" : "text-muted-foreground")}>{m.sub}</div>
+            <div className={cn("text-xs", m.label === t("estCost") && overBudget ? "text-status-high" : "text-muted-foreground")}>{m.sub}</div>
           </Card>
         ))}
       </div>
@@ -304,10 +306,10 @@ export default function Itinerary() {
           {days.map(([day, items]) => (
             <section key={day}>
               <div className="mb-3 flex items-center gap-3">
-                <span className="rounded-full bg-forest px-3 py-1 text-sm font-bold text-white dark:bg-mint dark:text-forest">Day {day}</span>
+                <span className="rounded-full bg-forest px-3 py-1 text-sm font-bold text-white dark:bg-mint dark:text-forest">{t("dayLabel")} {day}</span>
                 <span className="text-sm text-muted-foreground">{fmtDate(items[0].date)}</span>
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <CloudSun className="h-3.5 w-3.5" /> Start from Jagdalpur hub
+                  <CloudSun className="h-3.5 w-3.5" /> {t("startHub")}
                 </span>
               </div>
               <div className="relative space-y-3 border-l-2 border-dashed border-eco/30 pl-4 sm:pl-6">
@@ -337,7 +339,7 @@ export default function Itinerary() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between gap-2">
-                <CardTitle>What-if crowd surge</CardTitle>
+                <CardTitle>{t("whatIf")}</CardTitle>
                 <SimBadge label="Simulation" />
               </div>
             </CardHeader>
@@ -357,7 +359,7 @@ export default function Itinerary() {
           )}
           <Card>
             <CardHeader>
-              <CardTitle>Before vs after load balancing</CardTitle>
+              <CardTitle>{t("beforeAfter")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ImpactCompareChart impact={imp} height={220} />

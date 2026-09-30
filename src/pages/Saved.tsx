@@ -8,21 +8,23 @@ import { PageHeader } from "@/components/Layout";
 import { ShareTripDialog, ecoScoreOf } from "@/components/ShareTripDialog";
 import { useDestMap, useStore } from "@/store/useStore";
 import { fmtDate } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 export default function Saved() {
+  const tr = useT();
   const { savedTrips, deleteSaved, setTrip } = useStore();
   const pool = useDestMap();
   const nav = useNavigate();
 
   return (
     <div className="container">
-      <PageHeader eyebrow="Trip history" title="Saved trips" subtitle="Stored privately in this browser (localStorage)." />
+      <PageHeader eyebrow={tr("savedEyebrow")} title={tr("savedTitle")} subtitle={tr("savedSub")} />
       {!savedTrips.length ? (
         <Card className="flex flex-col items-center gap-4 p-12 text-center">
           <Bookmark className="h-10 w-10 text-eco" />
-          <p className="text-muted-foreground">No saved trips yet. Generate an itinerary and tap Save.</p>
+          <p className="text-muted-foreground">{tr("noSaved")}</p>
           <Button asChild>
-            <Link to="/plan">Plan a trip</Link>
+            <Link to="/plan">{tr("planTrip")}</Link>
           </Button>
         </Card>
       ) : (
@@ -76,7 +78,7 @@ export default function Saved() {
                       nav("/itinerary");
                     }}
                   >
-                    Open
+                    {tr("open")}
                   </Button>
                   <ShareTripDialog trip={t} />
                   <Button

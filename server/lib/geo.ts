@@ -14,9 +14,29 @@ export interface GeoResult {
 const geoCache = new TTLCache<GeoResult[]>(24 * 60 * 60 * 1000);
 let lastNominatim = 0;
 
+const CITIES = [
+  { name: "Raipur", lat: 21.2514, lon: 81.6296 },
+  { name: "Bilaspur", lat: 22.0797, lon: 82.1409 },
+  { name: "Durg", lat: 21.1904, lon: 81.2849 },
+  { name: "Bhilai", lat: 21.2092, lon: 81.4285 },
+  { name: "Kondagaon", lat: 19.5914, lon: 81.6639 },
+  { name: "Kanker", lat: 20.2719, lon: 81.4918 },
+  { name: "Dantewada", lat: 18.8954, lon: 81.3494 },
+  { name: "Narayanpur", lat: 19.7148, lon: 81.2475 },
+  { name: "Bijapur", lat: 18.8437, lon: 80.7718 },
+  { name: "Sukma", lat: 18.3912, lon: 81.6588 },
+];
+
 function localSearch(q: string, dests: Destination[]): GeoResult[] {
-  const s = q.toLowerCase();
-  const hubs = Object.values(HUBS).map((h) => ({ name: h.name, displayName: `${h.name}, Chhattisgarh`, lat: h.lat, lon: h.lon, type: "city" }));
+  const s = q.trim().toLowerCase();
+  if (!s) return [];
+  const hubs = [...Object.values(HUBS), ...CITIES.filter((c) => !Object.values(HUBS).some((h) => h.name === c.name))].map((h) => ({
+    name: h.name,
+    displayName: `${h.name}, Chhattisgarh`,
+    lat: h.lat,
+    lon: h.lon,
+    type: "city",
+  }));
   const ds = dests.map((d) => ({ name: d.name, displayName: `${d.name}, ${d.region}, ${d.state}`, lat: d.latitude, lon: d.longitude, type: d.category }));
   return [...hubs, ...ds]
     .filter((x) => x.displayName.toLowerCase().includes(s) || s.includes(x.name.toLowerCase().split(",")[0]))
@@ -67,7 +87,7 @@ export async function nearbyOsm(d: Destination) {
       "https://overpass-api.de/api/interpreter",
       {
         method: "POST",
-        headers: { "User-Agent": USER_AGENT, "Content-Type": "application/x-www-form-urlencoded" },
+        headers: { "User-Agent": USER_AGENT, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
         body: `data=${encodeURIComponent(q)}`,
         timeoutMs: 12000,
       },

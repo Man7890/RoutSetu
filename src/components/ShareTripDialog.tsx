@@ -7,6 +7,24 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useDestMap } from "@/store/useStore";
 import { fmtDate } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+
+async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  }
+}
 
 export function ecoScoreOf(trip: Trip, pool: Map<string, { ecoScore: number }>) {
   const s = trip.items.map((i) => pool.get(i.destinationId)?.ecoScore ?? 70);
@@ -15,6 +33,7 @@ export function ecoScoreOf(trip: Trip, pool: Map<string, { ecoScore: number }>) 
 
 export function ShareTripDialog({ trip, trigger }: { trip: Trip; trigger?: React.ReactNode }) {
   const pool = useDestMap();
+  const t = useT();
   const [open, setOpen] = useState(false);
   const names = trip.items.map((i) => pool.get(i.destinationId)?.name ?? i.destinationId);
   const eco = ecoScoreOf(trip, pool);
@@ -34,12 +53,12 @@ export function ShareTripDialog({ trip, trigger }: { trip: Trip; trigger?: React
       try {
         await navigator.share({ title: trip.name, text, url });
         return;
-      } catch {
-        /* user cancelled — fall back */
+      } catch (e) {
+        if ((e as Error).name === "AbortError") return;
       }
     }
-    await navigator.clipboard.writeText(`${text}\n${url}`);
-    toast.success("Trip summary copied to clipboard");
+    if (await copyText(`${text}\n${url}`)) toast.success(t("copied"));
+    else toast.error(t("copyFailed"));
   }
 
   return (
@@ -47,12 +66,12 @@ export function ShareTripDialog({ trip, trigger }: { trip: Trip; trigger?: React
       <DialogTrigger asChild>
         {trigger ?? (
           <Button variant="outline">
-            <Share2 /> Share
+            <Share2 /> {t("share")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>Share trip</DialogTitle>
+        <DialogTitle>{t("shareTrip")}</DialogTitle>
         <DialogDescription className="text-sm text-muted-foreground">A summary card anyone can read.</DialogDescription>
         <div className="mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-forest to-eco p-6 text-white shadow-lift">
           <div className="flex items-start justify-between gap-4">
@@ -85,16 +104,16 @@ export function ShareTripDialog({ trip, trigger }: { trip: Trip; trigger?: React
         </div>
         <div className="mt-4 flex gap-2">
           <Button className="flex-1" onClick={share}>
-            <Share2 /> Share
+            <Share2 /> {t("share")}
           </Button>
           <Button
             variant="outline"
             onClick={async () => {
-              await navigator.clipboard.writeText(`${text}\n${url}`);
-              toast.success("Copied to clipboard");
+              if (await copyText(`${text}\n${url}`)) toast.success(t("copied"));
+              else toast.error(t("copyFailed"));
             }}
           >
-            <Copy /> Copy
+            <Copy /> {t("copy")}
           </Button>
         </div>
       </DialogContent>

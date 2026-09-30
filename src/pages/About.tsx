@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/Layout";
 import { SimBadge } from "@/components/StatusBadge";
 import { ASSUMPTIONS } from "@shared/engine";
+import { useT, type TKey } from "@/lib/i18n";
 
 const STEPS = [
   { icon: Radar, title: "Sense", text: "Collect crowd signals (simulated), weather from Open-Meteo, capacity and community reports." },
@@ -23,9 +24,10 @@ const SIGNALS = [
 ];
 
 export default function About() {
+  const t = useT();
   return (
     <div className="container">
-      <PageHeader eyebrow="How it works" title="Sense → Analyze → Predict → Balance → Optimize" subtitle="RouteSetu treats tourism like a network: when one node overloads, visitors are routed to comparable nodes with spare capacity." />
+      <PageHeader eyebrow={t("aboutEyebrow")} title={t("aboutTitle")} subtitle={t("aboutSub")} />
       <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
         <div className="flex flex-col items-stretch">
           {STEPS.map((s, i) => (
@@ -36,8 +38,8 @@ export default function About() {
                     <s.icon className="h-6 w-6" />
                   </div>
                   <div>
-                    <h3 className="font-bold">{s.title}</h3>
-                    <p className="text-sm text-muted-foreground">{s.text}</p>
+                    <h3 className="font-bold">{t(`about_${s.title}` as TKey)}</h3>
+                    <p className="text-sm text-muted-foreground">{t(`about_${s.title}_t` as TKey)}</p>
                   </div>
                 </Card>
               </motion.div>

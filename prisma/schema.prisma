@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Destination {
+  id                       String   @id
+  name                     String
+  slug                     String   @unique
+  description              String
+  latitude                 Float
+  longitude                Float
+  region                   String
+  state                    String
+  category                 String
+  tags                     String // JSON array
+  capacity                 Int
+  baseVisitors             Int
+  currentVisitors          Int
+  crowdScore               Int
+  environmentalSensitivity Int
+  ecoScore                 Int
+  popularityScore          Int
+  localEconomyScore        Int
+  averageVisitMinutes      Int
+  bestStartHour            Int
+  bestEndHour              Int
+  averageCost              Int
+  imageUrl                 String
+  localOpportunities       String // JSON array
+
+  snapshots        CrowdSnapshot[]
+  itineraryItems   ItineraryItem[]
+  simulationEvents SimulationEvent[]
+}
+
+model CrowdSnapshot {
+  id                  String      @id @default(cuid())
+  destinationId       String
+  destination         Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  timestamp           DateTime    @default(now())
+  visitorCount        Int
+  crowdScore          Int
+  capacityUtilization Float
+  source              String // SIMULATION | USER_REPORT | API
+}
+
+model Trip {
+  id                String          @id
+  name              String
+  origin            String
+  destinationRegion String
+  startDate         String
+  endDate           String
+  travelers         Int
+  budget            Int
+  ecoPriority       Int
+  crowdTolerance    Int
+  payload           String // full Trip JSON (preferences, items, diversions, impact)
+  createdAt         DateTime        @default(now())
+  items             ItineraryItem[]
+  impact            ImpactMetric[]
+}
+
+model ItineraryItem {
+  id                    String      @id
+  tripId                String
+  trip                  Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  destinationId         String
+  destination           Destination @relation(fields: [destinationId], references: [id])
+  date                  String
+  startTime             String
+  endTime               String
+  durationMinutes       Int
+  sequence              Int
+  originalDestinationId String?
+  wasDiverted           Boolean     @default(false)
+  diversionReason       String?
+}
+
+model SimulationEvent {
+  id                    String      @id @default(cuid())
+  destinationId         String
+  destination           Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  previousCrowdScore    Int
+  newCrowdScore         Int
+  triggerType           String
+  alternativeId         String?
+  visitorsRedistributed Int         @default(0)
+  co2AvoidedKg          Float       @default(0)
+  pressureReducedPct    Float       @default(0)
+  createdAt             DateTime    @default(now())
+}
+
+model ImpactMetric {
+  id                    String @id @default(cuid())
+  tripId                String
+  trip                  Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  kind                  String // TRADITIONAL | OPTIMIZED
+  distanceKm            Float
+  estimatedCO2Kg        Float
+  environmentalPressure Float
+  crowdExposure         Float
+  redistributedVisitors Int
+}
